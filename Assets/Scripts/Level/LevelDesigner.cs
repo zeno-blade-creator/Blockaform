@@ -1,0 +1,109 @@
+using UnityEngine;
+
+public class LevelDesigner : MonoBehaviour
+{
+    [Header("Prefab References")]
+    [Tooltip("The platform prefab to instantiate for each grid cell")]
+    public GameObject platformPrefab;
+    
+    [Tooltip("The player prefab to spawn at the start")]
+    public GameObject playerPrefab;
+    
+    [Tooltip("The goal object prefab to spawn at the end")]
+    public GameObject goalPrefab;
+    
+    [Header("Grid Settings")]
+    [Tooltip("Size of the grid (5x5 means 5 platforms in each direction)")]
+    public int gridSize = 5;
+    
+    [Tooltip("Size of each platform in Unity units")]
+    public float platformSize = 3f;
+    
+    [Tooltip("Maximum height variation in meters (each platform will be randomized within this range)")]
+    public float heightVariation = 5f;
+    
+    [Tooltip("Base height for all platforms (Y position)")]
+    public float baseHeight = 0f;
+    
+    // This method is called automatically when the game starts
+    void Start()
+    {
+        GenerateLevel();
+    }
+    
+    // This method creates the entire level
+    void GenerateLevel()
+    {
+        // Check if we have the required prefabs assigned
+        if (platformPrefab == null)
+        {
+            Debug.LogError("Platform Prefab is not assigned in LevelDesigner!");
+            return;
+        }
+        
+        // Generate platforms in a grid
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int z = 0; z < gridSize; z++)
+            {
+                // Calculate world position for this grid cell
+                // We center the grid around (0, 0, 0)
+                float worldX = (x * platformSize) - ((gridSize - 1) * platformSize / 2f);
+                float worldZ = (z * platformSize) - ((gridSize - 1) * platformSize / 2f);
+                
+                // Randomize the height within the specified range
+                float randomHeight = baseHeight + Random.Range(-heightVariation / 2f, heightVariation / 2f);
+                
+                // Create the position vector
+                Vector3 platformPosition = new Vector3(worldX, randomHeight, worldZ);
+                
+                // Instantiate (create) the platform at this position
+                GameObject platform = Instantiate(platformPrefab, platformPosition, Quaternion.identity);
+                
+                // Make the platform a child of this LevelDesigner object (keeps hierarchy clean)
+                platform.transform.SetParent(transform);
+                
+                // Name it so we can see it in the hierarchy
+                platform.name = $"Platform_{x}_{z}";
+                
+                // Spawn player on bottom-left platform (grid position [0, 0])
+                if (x == 0 && z == 0 && playerPrefab != null)
+                {
+                    SpawnPlayer(platformPosition, randomHeight);
+                }
+                
+                // Spawn goal on top-right platform (grid position [gridSize-1, gridSize-1])
+                if (x == gridSize - 1 && z == gridSize - 1 && goalPrefab != null)
+                {
+                    SpawnGoal(platformPosition, randomHeight);
+                }
+            }
+        }
+    }
+    
+    // Spawn the player on top of the starting platform
+    void SpawnPlayer(Vector3 platformPosition, float platformHeight)
+    {
+        // Calculate position on top of the platform
+        // Platform's top surface is at: platformHeight + (platform height / 2)
+        float playerY = platformHeight + platformPrefab.transform.localScale.y / 2f + playerPrefab.transform.localScale.y / 2f + 0.5f;
+        Vector3 playerPosition = new Vector3(platformPosition.x, playerY, platformPosition.z);
+        
+        // Instantiate the player
+        GameObject player = Instantiate(playerPrefab, playerPosition, Quaternion.identity);
+        player.name = "Player";
+    }
+    
+    // Spawn the goal on top of the end platform
+    void SpawnGoal(Vector3 platformPosition, float platformHeight)
+    {
+        // Calculate position on top of the platform
+        float goalY = platformHeight + platformPrefab.transform.localScale.y / 2f; // adds half of the platform's height
+        Vector3 goalPosition = new Vector3(platformPosition.x, goalY, platformPosition.z);
+        
+        // Instantiate the goal
+        GameObject goal = Instantiate(goalPrefab, goalPosition, Quaternion.identity);
+        goal.name = "Goal";
+    }
+}
+

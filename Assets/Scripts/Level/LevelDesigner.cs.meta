@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5b0751da0a45c4738bab228a4c7d7be7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - platformPrefab: {fileID: 4117554586625157230, guid: 5f5db6975dd284f8dba01da6466fd20d, type: 3}
+  - playerPrefab: {fileID: 2347422431523106451, guid: 02adac372ae0844bf8da3d6bfc7103f3, type: 3}
+  - goalPrefab: {fileID: 1180688892833292272, guid: 3417bc8e31bb54600b956e938dc2b4b6, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
