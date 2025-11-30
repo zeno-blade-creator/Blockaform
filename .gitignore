@@ -1,0 +1,18 @@
+# Unity stuff
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+UserSettings/
+
+# IDE stuff
+.vs/
+*.csproj
+*.sln
+*.user
+
+# macOS junk stuff
+.DS_Store
