@@ -153,12 +153,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   speed: 5
-  sprintSpeed: 8
-  jumpForce: 8
-  gravity: -20
-  groundCheckDistance: 0.1
-  groundLayerMask:
-    serializedVersion: 2
-    m_Bits: 1
-  cameraTransform: {fileID: 0}
-  inputActionsAsset: {fileID: 0}
+  mainCamera: {fileID: 0}
+  cameraDistance: 10
+  cameraHeight: 5
+  jumpForce: 5
+  gravity: -9.8

@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Cinemachine;
 
 public class LevelDesigner : MonoBehaviour
 {
@@ -8,6 +9,9 @@ public class LevelDesigner : MonoBehaviour
     
     [Tooltip("The player prefab to spawn at the start")]
     public GameObject playerPrefab;
+
+    [Tooltip("The virtual camera to follow the player (assign in Inspector or leave null to find automatically)")]
+    public CinemachineVirtualCamera virtualCamera;
     
     [Tooltip("The goal object prefab to spawn at the end")]
     public GameObject goalPrefab;
@@ -69,7 +73,8 @@ public class LevelDesigner : MonoBehaviour
                 // Spawn player on bottom-left platform (grid position [0, 0])
                 if (x == 0 && z == 0 && playerPrefab != null)
                 {
-                    SpawnPlayer(platformPosition, randomHeight);
+                    GameObject player = SpawnPlayer(platformPosition, randomHeight);
+                    AssignPlayerToCamera(player);
                 }
                 
                 // Spawn goal on top-right platform (grid position [gridSize-1, gridSize-1])
@@ -82,7 +87,7 @@ public class LevelDesigner : MonoBehaviour
     }
     
     // Spawn the player on top of the starting platform
-    void SpawnPlayer(Vector3 platformPosition, float platformHeight)
+    GameObject SpawnPlayer(Vector3 platformPosition, float platformHeight)
     {
         // Calculate position on top of the platform
         // Platform's top surface is at: platformHeight + (platform height / 2)
@@ -92,6 +97,36 @@ public class LevelDesigner : MonoBehaviour
         // Instantiate the player
         GameObject player = Instantiate(playerPrefab, playerPosition, Quaternion.identity);
         player.name = "Player";
+        
+        return player;
+    }
+    
+    // Assign the player to the Cinemachine virtual camera's Follow and LookAt targets
+    void AssignPlayerToCamera(GameObject player)
+    {
+        // If virtualCamera is not assigned in Inspector, try to find one in the scene
+        if (virtualCamera == null)
+        {
+            virtualCamera = FindObjectOfType<CinemachineVirtualCamera>();
+            
+            if (virtualCamera == null)
+            {
+                Debug.LogWarning("CinemachineVirtualCamera not found! Please assign it in the Inspector or add one to the scene.");
+                return;
+            }
+        }
+        
+        // Assign the player's transform to Follow and LookAt
+        if (player != null && virtualCamera != null)
+        {
+            virtualCamera.Follow = player.transform;
+            virtualCamera.LookAt = player.transform;
+            Debug.Log($"Player assigned to Cinemachine camera: Follow={player.transform}, LookAt={player.transform}");
+        }
+        else
+        {
+            Debug.LogError("Cannot assign player to camera: player or virtualCamera is null!");
+        }
     }
     
     // Spawn the goal on top of the end platform

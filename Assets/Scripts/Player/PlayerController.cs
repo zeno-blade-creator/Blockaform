@@ -33,6 +33,14 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float speed = 5f;
+
+    //[Header("Camera")]
+    //public Camera mainCamera;
+    public float cameraDistance = 10f;
+    public float cameraHeight = 5f;
+    
+    // Private reference to camera's transform (we'll get this from the Camera component)
+    //private Transform cameraTransform;
     
     // Private variables - components we need to reference
     private CharacterController characterController;
@@ -48,6 +56,18 @@ public class PlayerController : MonoBehaviour
     void Awake()
     {
         characterController = GetComponent<CharacterController>();
+        
+        // Find camera if not assigned in inspector
+        /*if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+        
+        // Get the transform from the Camera component (this is what we'll move)
+        if (mainCamera != null)
+        {
+            cameraTransform = mainCamera.transform;
+        }*/
     }
     
     void Update()
@@ -105,6 +125,26 @@ public class PlayerController : MonoBehaviour
 
         characterController.Move(movement);
     }
+    
+   /* void LateUpdate()
+    {
+        // Camera follows the player
+        if (cameraTransform != null)
+        {
+            // Calculate desired camera position
+            // transform.position is the current position (x, y, z coordinates) of THIS GameObject
+            // (the player in this case). It's a Vector3 representing where the player is in 3D space.
+            Vector3 targetPosition = transform.position;
+            targetPosition.y += cameraHeight;
+            targetPosition.z -= cameraDistance;
+            
+            // Update camera position
+            cameraTransform.position = targetPosition;
+            
+            // Make camera look at the player
+            cameraTransform.LookAt(transform.position);
+        }
+    }*/
     
     // ============================================================================
     // INPUT.GetAxis() - EXPLAINED IN DETAIL:
