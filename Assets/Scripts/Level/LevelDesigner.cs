@@ -3,7 +3,7 @@ using Unity.Cinemachine;
 
 public class LevelDesigner : MonoBehaviour
 {
-    [Header("Prefab References")]
+    [Header("Setup")]
     [Tooltip("The platform prefab to instantiate for each grid cell")]
     public GameObject platformPrefab;
     
@@ -11,7 +11,7 @@ public class LevelDesigner : MonoBehaviour
     public GameObject playerPrefab;
 
     [Tooltip("The virtual camera to follow the player (assign in Inspector or leave null to find automatically)")]
-    public CinemachineVirtualCamera virtualCamera;
+    public CinemachineCamera followCam;
     
     [Tooltip("The goal object prefab to spawn at the end")]
     public GameObject goalPrefab;
@@ -105,11 +105,11 @@ public class LevelDesigner : MonoBehaviour
     void AssignPlayerToCamera(GameObject player)
     {
         // If virtualCamera is not assigned in Inspector, try to find one in the scene
-        if (virtualCamera == null)
+        if (followCam == null)
         {
-            virtualCamera = FindObjectOfType<CinemachineVirtualCamera>();
+            followCam = FindObjectOfType<CinemachineCamera>();
             
-            if (virtualCamera == null)
+            if (followCam == null)
             {
                 Debug.LogWarning("CinemachineVirtualCamera not found! Please assign it in the Inspector or add one to the scene.");
                 return;
@@ -117,10 +117,10 @@ public class LevelDesigner : MonoBehaviour
         }
         
         // Assign the player's transform to Follow and LookAt
-        if (player != null && virtualCamera != null)
+        if (player != null && followCam != null)
         {
-            virtualCamera.Follow = player.transform;
-            virtualCamera.LookAt = player.transform;
+            followCam.Follow = player.transform;
+            followCam.LookAt = player.transform;
             Debug.Log($"Player assigned to Cinemachine camera: Follow={player.transform}, LookAt={player.transform}");
         }
         else

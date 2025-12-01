@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Unity.Cinemachine;
 
 // ============================================================================
 // CHARACTER CONTROLLER vs REGULAR COLLIDERS:
@@ -38,6 +39,10 @@ public class PlayerController : MonoBehaviour
     //public Camera mainCamera;
     public float cameraDistance = 10f;
     public float cameraHeight = 5f;
+
+    [Header("Camera")]
+    // public CinemachineCamera followCam;
+    public Transform cameraTransform;
     
     // Private reference to camera's transform (we'll get this from the Camera component)
     //private Transform cameraTransform;
@@ -57,17 +62,15 @@ public class PlayerController : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
         
-        // Find camera if not assigned in inspector
-        /*if (mainCamera == null)
+        // Find the main Unity camera (the one with the MainCamera tag)
+        if (Camera.main != null)
         {
-            mainCamera = Camera.main;
+        cameraTransform = Camera.main.transform;
         }
-        
-        // Get the transform from the Camera component (this is what we'll move)
-        if (mainCamera != null)
+        else
         {
-            cameraTransform = mainCamera.transform;
-        }*/
+        Debug.LogError("PlayerController: No Camera tagged 'MainCamera' found in the scene!");
+        }
     }
     
     void Update()
@@ -79,6 +82,18 @@ public class PlayerController : MonoBehaviour
         // Instead, we check Keyboard.current which gives us the current keyboard state
         //
         // Keyboard.current returns null if no keyboard is connected, so check first!
+
+        if (cameraTransform == null)
+        {
+            Debug.LogError("PlayerController: No cameraTransform assigned!");
+            return;
+        }
+        Vector3 cameraForward = cameraTransform.forward;
+        Vector3 cameraRight = cameraTransform.right;
+        cameraForward.y = 0;
+        cameraRight.y = 0;
+        cameraForward.Normalize();
+        cameraRight.Normalize();
         
         float horizontalInput = 0f;
         float verticalInput = 0f;
@@ -99,7 +114,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Create horizontal movement (X and Z only)
-        Vector3 horizontalMovement = new Vector3(horizontalInput, 0, verticalInput);
+        Vector3 horizontalMovement = horizontalInput * cameraRight + verticalInput * cameraForward;
 
         if (horizontalMovement.magnitude > 0.1f) {
             transform.rotation = Quaternion.LookRotation(horizontalMovement);
