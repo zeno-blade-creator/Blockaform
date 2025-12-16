@@ -17,6 +17,9 @@ public class PauseScreenManager : MonoBehaviour
     [Tooltip("The Quit button")]
     public Button quitButton;
 
+    [Tooltip("The Regenerate Level button")]
+    public Button regenerateButton;
+
     void Start()
     {
         // Ensure canvas is hidden at start
@@ -34,6 +37,11 @@ public class PauseScreenManager : MonoBehaviour
         if (restartButton != null)
         {
             restartButton.onClick.AddListener(OnRestartButtonClicked);
+        }
+
+        if (regenerateButton != null)
+        {
+            regenerateButton.onClick.AddListener(OnRegenerateButtonClicked);
         }
 
         if (quitButton != null)
@@ -88,6 +96,15 @@ public class PauseScreenManager : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.QuitGame();
+        }
+    }
+
+    void OnRegenerateButtonClicked()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RegenerateLevel();
+            HidePauseScreen();
         }
     }
 

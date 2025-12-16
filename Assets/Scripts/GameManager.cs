@@ -65,12 +65,18 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game Paused");
     }
 
+    public void RegenerateLevel()
+    {
+        levelDesigner.GenerateLevel();
+        PlayGame();
+        Debug.Log("Level Regenerated");
+    }
+
     // Called when Restart button is clicked
     public void RestartGame()
     {
-        Time.timeScale = 1f; // Ensure time is normal before reloading
-        //CurrentState = GameState.Start; // Will be set back to Start in Start()
         levelDesigner.RestartLevel();
+        PlayGame();
         Debug.Log("Game Restarted");
     }
 
@@ -81,6 +87,13 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game Ended - Player reached goal! Current state: " + CurrentState);
         Time.timeScale = 0f; // Freeze time
         Debug.Log("Game Ended - Player reached goal!");
+    }
+
+    public void NextLevel()
+    {
+        levelDesigner.GenerateLevel();
+        PlayGame();
+        Debug.Log("Next Level");
     }
 
     // Called when Quit button is clicked

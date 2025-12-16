@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public float speed = 5f;
     public float jumpForce = 5f;
     public float gravity = -9.8f;
+    public float coyoteTime = 0.2f; // Grace period to jump after leaving a platform
 
 
     [Header("Camera")]
@@ -22,6 +23,7 @@ public class PlayerController : MonoBehaviour
     private CharacterController characterController;
     private Vector3 movement; // This will store our movement direction
     private Vector3 velocity;
+    private float lastGroundedTime; // Track when the player was last grounded
     
     void Awake()
     {
@@ -92,11 +94,21 @@ public class PlayerController : MonoBehaviour
         float velocityYBefore = velocity.y;
         Vector3 positionBeforeMove = transform.position;
         
-        if (characterController.isGrounded) {
+        // Update lastGroundedTime when grounded
+        if (wasGrounded) {
+            lastGroundedTime = Time.time;
+            
             if (spacePressed) {
                 velocity.y = jumpForce;
             }
         } else {
+            // Check if we can still jump using coyote time
+            bool canCoyoteJump = (Time.time - lastGroundedTime) < coyoteTime;
+            
+            if (spacePressed && canCoyoteJump) {
+                velocity.y = jumpForce;
+            }
+            
             velocity.y += gravity * Time.deltaTime;
         }
         
