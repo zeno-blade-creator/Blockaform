@@ -18,13 +18,15 @@ public class PlayerController : MonoBehaviour
     public float cameraHeight = 5f;
     
     
+
     // Private variables
     private Transform cameraTransform;
     private CharacterController characterController;
     private Vector3 movement; // This will store our movement direction
     private Vector3 velocity;
     private float lastGroundedTime; // Track when the player was last grounded
-    
+    private int doubleJumpAmount = 1; // Amount of double jumps per level
+
     void Awake()
     {
         characterController = GetComponent<CharacterController>();
@@ -36,6 +38,8 @@ public class PlayerController : MonoBehaviour
         catch {
         Debug.LogError("PlayerController: No Camera tagged 'MainCamera' found in the scene!");
         }
+        doubleJumpAmount = 1;
+        GameplayUI.Instance.UpdateDoubleJumpUI(doubleJumpAmount);
     }
     
     void Update()
@@ -105,8 +109,12 @@ public class PlayerController : MonoBehaviour
             // Check if we can still jump using coyote time
             bool canCoyoteJump = (Time.time - lastGroundedTime) < coyoteTime;
             
-            if (spacePressed && canCoyoteJump) {
+            if (spacePressed && (canCoyoteJump || doubleJumpAmount > 0)) {
                 velocity.y = jumpForce;
+                if (!canCoyoteJump) {
+                    doubleJumpAmount--;
+                    GameplayUI.Instance.UpdateDoubleJumpUI(doubleJumpAmount);
+                }
             }
             
             velocity.y += gravity * Time.deltaTime;

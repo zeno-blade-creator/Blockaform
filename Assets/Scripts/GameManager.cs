@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     public GameState CurrentState { get; private set; }
 
     public LevelDesigner levelDesigner;
+    public GameplayUI gameplayUI;
 
     void Awake()
     {
@@ -44,6 +45,16 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        if (gameplayUI == null)
+        {
+            gameplayUI = FindFirstObjectByType<GameplayUI>();
+            if (gameplayUI == null)
+            {
+                Debug.LogError("GameManager: GameplayUI not found in scene!");
+                return;
+            }
+        }
+
         levelDesigner.GenerateLevel();
         CurrentState = GameState.Start;
         Time.timeScale = 0f; // Pause the game initially for start screen
@@ -54,6 +65,7 @@ public class GameManager : MonoBehaviour
     {
         CurrentState = GameState.Playing;
         Time.timeScale = 1f; // Resume normal time
+        gameplayUI.ShowGameplayUI();
         Debug.Log("Game Started/Resumed from " + CurrentState);
     }
 
