@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
 
 public class PauseScreenManager : MonoBehaviour
 {
@@ -17,10 +16,6 @@ public class PauseScreenManager : MonoBehaviour
     
     [Tooltip("The Quit button")]
     public Button quitButton;
-    
-    [Header("Debug")]
-    [Tooltip("Enable manual click detection as fallback")]
-    public bool useManualClickDetection = true;
 
     void Start()
     {
@@ -66,49 +61,6 @@ public class PauseScreenManager : MonoBehaviour
                     GameManager.Instance.PlayGame();
                     HidePauseScreen();
                 }
-            }
-        }
-        
-        // Manual click detection fallback for pause screen buttons
-        if (useManualClickDetection && pauseScreenCanvas != null && pauseScreenCanvas.activeSelf)
-        {
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                CheckManualButtonClicks();
-            }
-        }
-    }
-    
-    void CheckManualButtonClicks()
-    {
-        PointerEventData pointerData = new PointerEventData(EventSystem.current);
-        pointerData.position = Mouse.current.position.ReadValue();
-        
-        var results = new System.Collections.Generic.List<RaycastResult>();
-        EventSystem.current.RaycastAll(pointerData, results);
-        
-        foreach (var result in results)
-        {
-            if (resumeButton != null && (result.gameObject == resumeButton.gameObject || 
-                result.gameObject.transform.IsChildOf(resumeButton.transform)))
-            {
-                Debug.Log("Manual click detection: Resume button clicked!");
-                OnResumeButtonClicked();
-                break;
-            }
-            else if (restartButton != null && (result.gameObject == restartButton.gameObject || 
-                result.gameObject.transform.IsChildOf(restartButton.transform)))
-            {
-                Debug.Log("Manual click detection: Restart button clicked!");
-                OnRestartButtonClicked();
-                break;
-            }
-            else if (quitButton != null && (result.gameObject == quitButton.gameObject || 
-                result.gameObject.transform.IsChildOf(quitButton.transform)))
-            {
-                Debug.Log("Manual click detection: Quit button clicked!");
-                OnQuitButtonClicked();
-                break;
             }
         }
     }

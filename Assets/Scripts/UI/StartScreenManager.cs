@@ -16,7 +16,7 @@ public class StartScreenManager : MonoBehaviour
         // Ensure canvas is visible at start
         if (startScreenCanvas != null)
         {
-            startScreenCanvas.SetActive(true);
+            ShowStartScreen();
         }
         else
         {
@@ -78,7 +78,7 @@ public class StartScreenManager : MonoBehaviour
             // Hide start screen when game starts
             if (startScreenCanvas != null)
             {
-                startScreenCanvas.SetActive(false);
+                HideStartScreen();
             }
         }
         else

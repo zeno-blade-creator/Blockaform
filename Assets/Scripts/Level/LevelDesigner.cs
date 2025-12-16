@@ -39,12 +39,16 @@ public class LevelDesigner : MonoBehaviour
     // This method creates the entire level
     void GenerateLevel()
     {
+
         // Check if we have the required prefabs assigned
         if (platformPrefab == null)
         {
             Debug.LogError("Platform Prefab is not assigned in LevelDesigner!");
             return;
         }
+        
+        Vector3 highestPlatformPosition = Vector3.zero;
+        Vector3 lowestPlatformPosition = Vector3.zero;
         
         // Generate platforms in a grid
         for (int x = 0; x < gridSize; x++)
@@ -61,6 +65,15 @@ public class LevelDesigner : MonoBehaviour
                 
                 // Create the position vector
                 Vector3 platformPosition = new Vector3(worldX, randomHeight, worldZ);
+
+                if (randomHeight > highestPlatformPosition.y)
+                {
+                    highestPlatformPosition = platformPosition;
+                }
+                if (randomHeight < lowestPlatformPosition.y)
+                {
+                    lowestPlatformPosition = platformPosition;
+                }
                 
                 // Instantiate (create) the platform at this position
                 GameObject platform = Instantiate(platformPrefab, platformPosition, Quaternion.identity);
@@ -71,19 +84,20 @@ public class LevelDesigner : MonoBehaviour
                 // Name it so we can see it in the hierarchy
                 platform.name = $"Platform_{x}_{z}";
                 
-                // Spawn player on bottom-left platform (grid position [0, 0])
-                if (x == 0 && z == 0 && playerPrefab != null)
-                {
-                    GameObject player = SpawnPlayer(platformPosition, randomHeight);
-                    AssignPlayerToCamera(player);
-                }
-                
-                // Spawn goal on top-right platform (grid position [gridSize-1, gridSize-1])
-                if (x == gridSize - 1 && z == gridSize - 1 && goalPrefab != null)
-                {
-                    SpawnGoal(platformPosition, randomHeight);
-                }
             }
+        }
+
+        // Spawn player on the lowest platform
+        if (lowestPlatformPosition != Vector3.zero && playerPrefab != null)
+        {
+            GameObject player = SpawnPlayer(lowestPlatformPosition, lowestPlatformPosition.y);
+            AssignPlayerToCamera(player);
+        }
+
+        // Spawn goal on the highest platform
+        if (highestPlatformPosition != Vector3.zero && goalPrefab != null)
+        {
+            SpawnGoal(highestPlatformPosition, highestPlatformPosition.y);
         }
     }
     

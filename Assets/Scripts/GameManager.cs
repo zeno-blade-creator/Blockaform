@@ -33,23 +33,17 @@ public class GameManager : MonoBehaviour
     // Called when Play button is clicked or ESC is pressed while paused
     public void PlayGame()
     {
-        if (CurrentState == GameState.Start || CurrentState == GameState.Paused)
-        {
-            CurrentState = GameState.Playing;
-            Time.timeScale = 1f; // Resume normal time
-            Debug.Log("Game Started/Resumed from " + CurrentState);
-        }
+        CurrentState = GameState.Playing;
+        Time.timeScale = 1f; // Resume normal time
+        Debug.Log("Game Started/Resumed from " + CurrentState);
     }
 
     // Called when ESC is pressed during gameplay
     public void PauseGame()
     {
-        if (CurrentState == GameState.Playing)
-        {
-            CurrentState = GameState.Paused;
-            Time.timeScale = 0f; // Freeze time
-            Debug.Log("Game Paused");
-        }
+        CurrentState = GameState.Paused;
+        Time.timeScale = 0f; // Freeze time
+        Debug.Log("Game Paused");
     }
 
     // Called when Restart button is clicked
@@ -64,12 +58,10 @@ public class GameManager : MonoBehaviour
     // Called when player reaches the goal flag
     public void EndGame()
     {
-        if (CurrentState == GameState.Playing)
-        {
-            CurrentState = GameState.Ended;
-            Time.timeScale = 0f; // Freeze time
-            Debug.Log("Game Ended - Player reached goal!");
-        }
+        CurrentState = GameState.Ended;
+        Debug.Log("Game Ended - Player reached goal! Current state: " + CurrentState);
+        Time.timeScale = 0f; // Freeze time
+        Debug.Log("Game Ended - Player reached goal!");
     }
 
     // Called when Quit button is clicked

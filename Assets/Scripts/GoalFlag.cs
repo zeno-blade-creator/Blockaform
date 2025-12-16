@@ -10,9 +10,11 @@ public class GoalFlag : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log("GoalFlag: OnTriggerEnter called with other: " + other.name + " and playerTag: " + playerTag);
         if (other.CompareTag(playerTag) && !hasBeenTriggered)
         {
             hasBeenTriggered = true;
+            Debug.Log("GoalFlag: hasBeenTriggered set to true");
             
             // Trigger end game
             if (GameManager.Instance != null)
