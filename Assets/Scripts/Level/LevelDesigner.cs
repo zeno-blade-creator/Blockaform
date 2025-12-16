@@ -116,7 +116,7 @@ public class LevelDesigner : MonoBehaviour
         // If virtualCamera is not assigned in Inspector, try to find one in the scene
         if (followCam == null)
         {
-            followCam = FindObjectOfType<CinemachineCamera>();
+            followCam = GameObject.FindFirstObjectByType<CinemachineCamera>();
             
             if (followCam == null)
             {

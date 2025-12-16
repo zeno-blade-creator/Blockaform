@@ -38,6 +38,11 @@ public class PlayerController : MonoBehaviour
     
     void Update()
     {
+        // Don't process input if game is not in Playing state
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing)
+        {
+            return;
+        }
 
         if (cameraTransform == null)
         {

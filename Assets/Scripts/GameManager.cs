@@ -1,34 +1,96 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GameState { Start, Playing, Paused, Ended }
-public class GameManager : MonoBehaviour {
+
+public class GameManager : MonoBehaviour
+{
     public static GameManager Instance;
     public GameState CurrentState { get; private set; }
 
-    bool GameStart() {
-        CurrentState = GameState.Playing;
-        Debug.Log("Game Started");
-        return true;
+    void Awake()
+    {
+        // Singleton pattern - ensure only one GameManager exists
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // Persist across scene reloads
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
-    bool GamePause() {
-        CurrentState = GameState.Paused;
-        Debug.Log("Game Paused");
-        return true;
+
+    void Start()
+    {
+        // Initialize game state to Start
+        CurrentState = GameState.Start;
+        Time.timeScale = 0f; // Pause the game initially for start screen
     }
-    bool GameResume() {
-        CurrentState = GameState.Playing;
-        Debug.Log("Game Resumed");
-        return true;
+
+    // Called when Play button is clicked
+    public void StartGame()
+    {
+        if (CurrentState == GameState.Start)
+        {
+            CurrentState = GameState.Playing;
+            Time.timeScale = 1f; // Resume normal time
+            Debug.Log("Game Started");
+        }
     }
-    bool GameRestart() {
-        CurrentState = GameState.Playing;
+
+    // Called when ESC is pressed during gameplay
+    public void PauseGame()
+    {
+        if (CurrentState == GameState.Playing)
+        {
+            CurrentState = GameState.Paused;
+            Time.timeScale = 0f; // Freeze time
+            Debug.Log("Game Paused");
+        }
+    }
+
+    // Called when Resume button is clicked or ESC is pressed while paused
+    public void ResumeGame()
+    {
+        if (CurrentState == GameState.Paused)
+        {
+            CurrentState = GameState.Playing;
+            Time.timeScale = 1f; // Resume normal time
+            Debug.Log("Game Resumed");
+        }
+    }
+
+    // Called when Restart button is clicked
+    public void RestartLevel()
+    {
+        Time.timeScale = 1f; // Ensure time is normal before reloading
+        CurrentState = GameState.Start; // Will be set back to Start in Start()
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         Debug.Log("Game Restarted");
-        return true;
     }
-    bool GameEnd() {
-        CurrentState = GameState.Ended;
-        Debug.Log("Game Ended");
-        return true;
+
+    // Called when player reaches the goal flag
+    public void EndGame()
+    {
+        if (CurrentState == GameState.Playing)
+        {
+            CurrentState = GameState.Ended;
+            Time.timeScale = 0f; // Freeze time
+            Debug.Log("Game Ended - Player reached goal!");
+        }
     }
-    // State transition methods
+
+    // Called when Quit button is clicked
+    public void QuitGame()
+    {
+        Debug.Log("Quitting game...");
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
 }
