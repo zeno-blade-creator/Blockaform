@@ -30,14 +30,14 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f; // Pause the game initially for start screen
     }
 
-    // Called when Play button is clicked
-    public void StartGame()
+    // Called when Play button is clicked or ESC is pressed while paused
+    public void PlayGame()
     {
-        if (CurrentState == GameState.Start)
+        if (CurrentState == GameState.Start || CurrentState == GameState.Paused)
         {
             CurrentState = GameState.Playing;
             Time.timeScale = 1f; // Resume normal time
-            Debug.Log("Game Started");
+            Debug.Log("Game Started/Resumed from " + CurrentState);
         }
     }
 
@@ -49,17 +49,6 @@ public class GameManager : MonoBehaviour
             CurrentState = GameState.Paused;
             Time.timeScale = 0f; // Freeze time
             Debug.Log("Game Paused");
-        }
-    }
-
-    // Called when Resume button is clicked or ESC is pressed while paused
-    public void ResumeGame()
-    {
-        if (CurrentState == GameState.Paused)
-        {
-            CurrentState = GameState.Playing;
-            Time.timeScale = 1f; // Resume normal time
-            Debug.Log("Game Resumed");
         }
     }
 
@@ -89,6 +78,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Quitting game...");
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
+            //this is the one that's working right now (when the menus aren't working)
         #else
             Application.Quit();
         #endif
