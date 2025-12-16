@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     public GameState CurrentState { get; private set; }
 
+    public LevelDesigner levelDesigner;
+
     void Awake()
     {
         // Singleton pattern - ensure only one GameManager exists
@@ -25,7 +27,24 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Initialize game state to Start
+        StartGame();
+    }
+
+    private void StartGame()
+    {
+
+        // Re-acquire levelDesigner reference after scene reload
+        if (levelDesigner == null)
+        {
+            levelDesigner = FindFirstObjectByType<LevelDesigner>();
+            if (levelDesigner == null)
+            {
+                Debug.LogError("GameManager: LevelDesigner not found in scene!");
+                return;
+            }
+        }
+
+        levelDesigner.GenerateLevel();
         CurrentState = GameState.Start;
         Time.timeScale = 0f; // Pause the game initially for start screen
     }
@@ -47,11 +66,11 @@ public class GameManager : MonoBehaviour
     }
 
     // Called when Restart button is clicked
-    public void RestartLevel()
+    public void RestartGame()
     {
         Time.timeScale = 1f; // Ensure time is normal before reloading
-        CurrentState = GameState.Start; // Will be set back to Start in Start()
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        //CurrentState = GameState.Start; // Will be set back to Start in Start()
+        levelDesigner.RestartLevel();
         Debug.Log("Game Restarted");
     }
 

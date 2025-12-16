@@ -78,7 +78,8 @@ public class PauseScreenManager : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.RestartLevel();
+            GameManager.Instance.RestartGame();
+            HidePauseScreen();
         }
     }
 

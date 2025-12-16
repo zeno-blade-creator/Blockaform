@@ -1,6 +1,21 @@
 using UnityEngine;
 using Unity.Cinemachine;
 using System.IO;
+using System.Collections.Generic;
+
+// Data structure to store original platform information
+[System.Serializable]
+public class PlatformData
+{
+    public Vector3 position;
+    public string name;
+    
+    public PlatformData(Vector3 pos, string platformName)
+    {
+        position = pos;
+        name = platformName;
+    }
+}
 
 public class LevelDesigner : MonoBehaviour
 {
@@ -29,16 +44,21 @@ public class LevelDesigner : MonoBehaviour
     
     [Tooltip("Base height for all platforms (Y position)")]
     public float baseHeight = 0f;
+
+    public List<GameObject> platformList = new List<GameObject>();
     
-    // This method is called automatically when the game starts
-    void Start()
-    {
-        GenerateLevel();
-    }
+    // Store original platform positions to restore on restart
+    private List<PlatformData> originalPlatformData = new List<PlatformData>();
+    private Vector3 originalHighestPlatformPosition;
+    private Vector3 originalLowestPlatformPosition;
+    
     
     // This method creates the entire level
-    void GenerateLevel()
+    public void GenerateLevel()
     {
+        ClearObjects();
+        platformList.Clear();
+        originalPlatformData.Clear();
 
         // Check if we have the required prefabs assigned
         if (platformPrefab == null)
@@ -75,6 +95,10 @@ public class LevelDesigner : MonoBehaviour
                     lowestPlatformPosition = platformPosition;
                 }
                 
+                // Store original platform data for restoration
+                string platformName = $"Platform_{x}_{z}";
+                originalPlatformData.Add(new PlatformData(platformPosition, platformName));
+                
                 // Instantiate (create) the platform at this position
                 GameObject platform = Instantiate(platformPrefab, platformPosition, Quaternion.identity);
                 
@@ -82,10 +106,15 @@ public class LevelDesigner : MonoBehaviour
                 platform.transform.SetParent(transform);
                 
                 // Name it so we can see it in the hierarchy
-                platform.name = $"Platform_{x}_{z}";
+                platform.name = platformName;
                 
+                AddPlatformToList(platform);
             }
         }
+
+        // Store original highest/lowest positions for player and goal placement
+        originalHighestPlatformPosition = highestPlatformPosition;
+        originalLowestPlatformPosition = lowestPlatformPosition;
 
         // Spawn player on the lowest platform
         if (lowestPlatformPosition != Vector3.zero && playerPrefab != null)
@@ -100,7 +129,79 @@ public class LevelDesigner : MonoBehaviour
             SpawnGoal(highestPlatformPosition, highestPlatformPosition.y);
         }
     }
+
+    void AddPlatformToList(GameObject platform)
+    {
+        platformList.Add(platform);
+    }
+
+    public void RestartLevel()
+    {
+        ClearObjects();
+        
+        // If we have stored original platform data, restore from it
+        // Otherwise, generate a new level (first time)
+        if (originalPlatformData.Count > 0)
+        {
+            RestorePlatformsFromData();
+        }
+        else
+        {
+            GenerateLevel();
+        }
+    }
     
+    // Restore platforms to their original positions
+    void RestorePlatformsFromData()
+    {
+        platformList.Clear();
+        
+        // Recreate all platforms at their original positions
+        foreach (PlatformData data in originalPlatformData)
+        {
+            GameObject platform = Instantiate(platformPrefab, data.position, Quaternion.identity);
+            platform.transform.SetParent(transform);
+            platform.name = data.name;
+            AddPlatformToList(platform);
+        }
+        
+        // Respawn player on the original lowest platform
+        if (originalLowestPlatformPosition != Vector3.zero && playerPrefab != null)
+        {
+            GameObject player = SpawnPlayer(originalLowestPlatformPosition, originalLowestPlatformPosition.y);
+            AssignPlayerToCamera(player);
+        }
+        
+        // Respawn goal on the original highest platform
+        if (originalHighestPlatformPosition != Vector3.zero && goalPrefab != null)
+        {
+            SpawnGoal(originalHighestPlatformPosition, originalHighestPlatformPosition.y);
+        }
+    }
+
+    void ClearObjects()
+    {
+        // Destroy all platforms in the list (check for null in case some were already destroyed)
+        foreach (GameObject platform in platformList)
+        {
+            if (platform != null)
+            {
+                Destroy(platform);
+            }
+        }
+
+        GameObject oldPlayer = GameObject.Find("Player");
+        if (oldPlayer != null)
+        {
+            Destroy(oldPlayer);
+        }
+
+        GameObject oldGoal = GameObject.Find("Goal");
+        if (oldGoal != null)
+        {
+            Destroy(oldGoal);
+        }
+    }
     // Spawn the player on top of the starting platform
     GameObject SpawnPlayer(Vector3 platformPosition, float platformHeight)
     {

@@ -62,7 +62,7 @@ public class EndScreenManager : MonoBehaviour
         // You can extend this later to load different levels
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.RestartLevel();
+            GameManager.Instance.RestartGame();
         }
     }
 
@@ -70,7 +70,7 @@ public class EndScreenManager : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.RestartLevel();
+            GameManager.Instance.RestartGame();
         }
     }
 
