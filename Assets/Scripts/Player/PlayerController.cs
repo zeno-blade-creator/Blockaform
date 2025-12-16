@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
 using System.IO;
+using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
@@ -11,6 +12,7 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 5f;
     public float gravity = -9.8f;
     public float coyoteTime = 0.2f; // Grace period to jump after leaving a platform
+    public int doubleJumpAmount = 1; // Amount of double jumps per level
 
 
     [Header("Camera")]
@@ -25,7 +27,10 @@ public class PlayerController : MonoBehaviour
     private Vector3 movement; // This will store our movement direction
     private Vector3 velocity;
     private float lastGroundedTime; // Track when the player was last grounded
-    private int doubleJumpAmount = 1; // Amount of double jumps per level
+    private bool isFallingToDeath = false;
+    private bool cameraLockedOnDeath = false;
+    private Vector3 deathCameraPosition;
+    
 
     void Awake()
     {
@@ -38,7 +43,7 @@ public class PlayerController : MonoBehaviour
         catch {
         Debug.LogError("PlayerController: No Camera tagged 'MainCamera' found in the scene!");
         }
-        doubleJumpAmount = 1;
+        //doubleJumpAmount = 1;
         GameplayUI.Instance.UpdateDoubleJumpUI(doubleJumpAmount);
     }
     
@@ -55,6 +60,20 @@ public class PlayerController : MonoBehaviour
             Debug.LogError("PlayerController: No cameraTransform assigned!");
             return;
         }
+
+        // While falling to death, keep the camera locked in place
+        // but still rotate it to look at the player.
+        if (isFallingToDeath && cameraLockedOnDeath)
+        {
+            cameraTransform.position = deathCameraPosition;
+
+            Vector3 toPlayer = transform.position - cameraTransform.position;
+            if (toPlayer.sqrMagnitude > 0.0001f)
+            {
+                cameraTransform.rotation = Quaternion.LookRotation(toPlayer.normalized, Vector3.up);
+            }
+        }
+
         Vector3 cameraForward = cameraTransform.forward;
         Vector3 cameraRight = cameraTransform.right;
         cameraForward.y = 0;
@@ -65,8 +84,8 @@ public class PlayerController : MonoBehaviour
         float horizontalInput = 0f;
         float verticalInput = 0f;
         
-        // Get keyboard input
-        if (Keyboard.current != null)
+        // Get keyboard input (disabled while falling into the void)
+        if (!isFallingToDeath && Keyboard.current != null)
         {
             // Check if keys are pressed (returns true/false)
             if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
@@ -93,8 +112,8 @@ public class PlayerController : MonoBehaviour
         // Handles gravity and jumping (Y-axis stuff)
         bool wasGrounded = characterController.isGrounded;
         bool keyboardNotNull = Keyboard.current != null;
-        bool spacePressed = keyboardNotNull && Keyboard.current.spaceKey.wasPressedThisFrame;
-        bool spaceIsPressed = keyboardNotNull && Keyboard.current.spaceKey.isPressed;
+        bool spacePressed = !isFallingToDeath && keyboardNotNull && Keyboard.current.spaceKey.wasPressedThisFrame;
+        bool spaceIsPressed = !isFallingToDeath && keyboardNotNull && Keyboard.current.spaceKey.isPressed;
         float velocityYBefore = velocity.y;
         Vector3 positionBeforeMove = transform.position;
         
@@ -102,6 +121,8 @@ public class PlayerController : MonoBehaviour
         if (wasGrounded) {
             lastGroundedTime = Time.time;
             
+            velocity.y = 0;
+
             if (spacePressed) {
                 velocity.y = jumpForce;
             }
@@ -125,6 +146,76 @@ public class PlayerController : MonoBehaviour
         movement.y = velocity.y * Time.deltaTime;
 
         characterController.Move(movement);
+
+        // Maximum distance you can fall before triggering the death fall sequence
+        if (!isFallingToDeath && GameManager.Instance != null && GameManager.Instance.levelDesigner != null)
+        {
+            float killZoneY = -GameManager.Instance.levelDesigner.heightVariation;
+            if (transform.position.y < killZoneY)
+            {
+                isFallingToDeath = true;
+                LockCameraPositionOnDeath();
+                // Let the player continue falling for a short time,
+                // then restart the level.
+                StartCoroutine(DeathFallRoutine(1.2f));
+            }
+        }
         
+    }
+
+    private IEnumerator DeathFallRoutine(float delay) 
+    {
+        float elapsed = 0f;
+        while (elapsed < delay)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        UnlockCameraAfterDeath();
+        isFallingToDeath = false;
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RestartGame();
+        }
+    }
+
+    private void LockCameraPositionOnDeath()
+    {
+        if (cameraLockedOnDeath)
+        {
+            return;
+        }
+
+        Camera mainCam = Camera.main;
+        if (mainCam == null)
+        {
+            return;
+        }
+
+        var brain = mainCam.GetComponent<CinemachineBrain>();
+        if (brain != null)
+        {
+            brain.enabled = false;
+        }
+
+        deathCameraPosition = mainCam.transform.position;
+        cameraLockedOnDeath = true;
+    }
+
+    private void UnlockCameraAfterDeath()
+    {
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            var brain = mainCam.GetComponent<CinemachineBrain>();
+            if (brain != null)
+            {
+                brain.enabled = true;
+            }
+        }
+
+        cameraLockedOnDeath = false;
     }
 }

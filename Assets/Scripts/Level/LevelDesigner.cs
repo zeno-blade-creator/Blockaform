@@ -36,14 +36,14 @@ public class LevelDesigner : MonoBehaviour
     [Tooltip("Size of the grid (5x5 means 5 platforms in each direction)")]
     public int gridSize = 5;
     
-    [Tooltip("Size of each platform in Unity units")]
-    public float platformSize = 3f;
+    [Tooltip("Spacing between each platform in Unity units, should equal the platform size for no overlap")]
+    public float spacingBetweenPlatforms = 2f;
+
+    [Tooltip("Size of the platform in Unity units, default is 2")]
+    public float platformSize = 2f;
     
     [Tooltip("Maximum height variation in meters (each platform will be randomized within this range)")]
     public float heightVariation = 5f;
-    
-    [Tooltip("Base height for all platforms (Y position)")]
-    public float baseHeight = 0f;
 
     public List<GameObject> platformList = new List<GameObject>();
     
@@ -77,11 +77,11 @@ public class LevelDesigner : MonoBehaviour
             {
                 // Calculate world position for this grid cell
                 // We center the grid around (0, 0, 0)
-                float worldX = (x * platformSize) - ((gridSize - 1) * platformSize / 2f);
-                float worldZ = (z * platformSize) - ((gridSize - 1) * platformSize / 2f);
+                float worldX = (x * spacingBetweenPlatforms) - ((gridSize - 1) * spacingBetweenPlatforms / 2f);
+                float worldZ = (z * spacingBetweenPlatforms) - ((gridSize - 1) * spacingBetweenPlatforms / 2f);
                 
                 // Randomize the height within the specified range
-                float randomHeight = baseHeight + Random.Range(-heightVariation / 2f, heightVariation / 2f);
+                float randomHeight =  Random.Range(-heightVariation / 2f, heightVariation / 2f);
                 
                 // Create the position vector
                 Vector3 platformPosition = new Vector3(worldX, randomHeight, worldZ);
@@ -101,6 +101,7 @@ public class LevelDesigner : MonoBehaviour
                 
                 // Instantiate (create) the platform at this position
                 GameObject platform = Instantiate(platformPrefab, platformPosition, Quaternion.identity);
+                platform.transform.localScale = new Vector3(platformSize, 0.5f, platformSize);
                 
                 // Make the platform a child of this LevelDesigner object (keeps hierarchy clean)
                 platform.transform.SetParent(transform);
@@ -160,6 +161,7 @@ public class LevelDesigner : MonoBehaviour
         foreach (PlatformData data in originalPlatformData)
         {
             GameObject platform = Instantiate(platformPrefab, data.position, Quaternion.identity);
+            platform.transform.localScale = new Vector3(platformSize, 0.5f, platformSize);
             platform.transform.SetParent(transform);
             platform.name = data.name;
             AddPlatformToList(platform);
