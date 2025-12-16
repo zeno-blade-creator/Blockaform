@@ -98,14 +98,6 @@ public class LevelDesigner : MonoBehaviour
         float playerY = platformHeight + platformHalfHeight + playerHalfHeight + extraOffset;
         Vector3 playerPosition = new Vector3(platformPosition.x, playerY, platformPosition.z);
         
-        // #region agent log
-        try {
-            string logPath = "/Users/enzomarkarian/Unity/Hack Club Games/Blockaform/.cursor/debug.log";
-            string logEntry = $"{{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A4\",\"location\":\"LevelDesigner.cs:SpawnPlayer\",\"message\":\"Player spawn calculation\",\"data\":{{\"platformPosition\":\"{platformPosition}\",\"platformHeight\":{platformHeight},\"platformHalfHeight\":{platformHalfHeight},\"playerHalfHeight\":{playerHalfHeight},\"extraOffset\":{extraOffset},\"calculatedPlayerY\":{playerY},\"playerPosition\":\"{playerPosition}\"}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}}}\n";
-            File.AppendAllText(logPath, logEntry);
-        } catch {}
-        // #endregion
-        
         // Instantiate the player
         GameObject player = Instantiate(playerPrefab, playerPosition, Quaternion.identity);
         player.name = "Player";
@@ -113,14 +105,8 @@ public class LevelDesigner : MonoBehaviour
         // #region agent log
         CharacterController cc = player.GetComponent<CharacterController>();
         if (cc != null) {
-            try {
-                string logPath = "/Users/enzomarkarian/Unity/Hack Club Games/Blockaform/.cursor/debug.log";
-                string logEntry = $"{{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A4\",\"location\":\"LevelDesigner.cs:SpawnPlayer:afterInstantiate\",\"message\":\"Player instantiated with CharacterController\",\"data\":{{\"playerPosition\":\"{player.transform.position}\",\"ccHeight\":{cc.height},\"ccCenter\":\"{cc.center}\",\"ccSkinWidth\":{cc.skinWidth},\"platformTopY\":{platformHeight + platformHalfHeight * 2f}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}}}\n";
-                File.AppendAllText(logPath, logEntry);
-            } catch {}
+            Debug.Log($"Player instantiated with CharacterController: height={cc.height}, center={cc.center}, skinWidth={cc.skinWidth}");
         }
-        // #endregion
-        
         return player;
     }
     
