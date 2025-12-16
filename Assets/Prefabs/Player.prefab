@@ -153,8 +153,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   speed: 5
-  mainCamera: {fileID: 0}
   cameraDistance: 10
   cameraHeight: 5
+  cameraTransform: {fileID: 0}
   jumpForce: 5
   gravity: -9.8

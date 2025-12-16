@@ -1,87 +1,43 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
+using System.IO;
 
-// ============================================================================
-// CHARACTER CONTROLLER vs REGULAR COLLIDERS:
-// ============================================================================
-// 
-// CharacterController is a SPECIALIZED component for player/character movement.
-// Here's why we use it instead of a regular collider (BoxCollider, CapsuleCollider, etc.):
-//
-// REGULAR COLLIDERS (BoxCollider, SphereCollider, etc.):
-// - Used with Rigidbody physics system
-// - Objects are pushed by forces, collisions, and physics
-// - Movement is handled by Unity's physics engine (which can feel floaty/slippery)
-// - Good for: Objects that should bounce, fall naturally, or be affected by physics
-// - Example: A crate that gets pushed around, a ball that rolls
-//
-// CHARACTER CONTROLLER:
-// - NO Rigidbody needed - movement is DIRECT and immediate
-// - You control movement manually with .Move() method
-// - Has built-in collision detection (stops you from going through walls)
-// - Has built-in .isGrounded property (tells you if touching ground)
-// - Movement feels snappy and responsive (perfect for platformers)
-// - Handles slopes and stairs automatically (won't get stuck on small bumps)
-// - Good for: Player characters, NPCs, anything that needs precise control
-//
-// KEY DIFFERENCE:
-// - Collider + Rigidbody = Physics controls movement (realistic but less control)
-// - CharacterController = YOU control movement (precise and responsive)
-//
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float speed = 5f;
+    public float jumpForce = 5f;
+    public float gravity = -9.8f;
 
-    //[Header("Camera")]
-    //public Camera mainCamera;
-    public float cameraDistance = 10f;
-    public float cameraHeight = 5f;
 
     [Header("Camera")]
-    // public CinemachineCamera followCam;
-    public Transform cameraTransform;
+    public float cameraDistance = 10f;
+    public float cameraHeight = 5f;
     
-    // Private reference to camera's transform (we'll get this from the Camera component)
-    //private Transform cameraTransform;
     
-    // Private variables - components we need to reference
+    // Private variables
+    private Transform cameraTransform;
     private CharacterController characterController;
     private Vector3 movement; // This will store our movement direction
     private Vector3 velocity;
-    public float jumpForce = 5f;
-    public float gravity = -9.8f;
-    
-    // ============================================================================
-    // Unity Lifecycle Methods (these are called automatically by Unity)
-    // ============================================================================
     
     void Awake()
     {
         characterController = GetComponent<CharacterController>();
         
-        // Find the main Unity camera (the one with the MainCamera tag)
-        if (Camera.main != null)
-        {
+        // Find the main Unity camera
+        try {
         cameraTransform = Camera.main.transform;
         }
-        else
-        {
+        catch {
         Debug.LogError("PlayerController: No Camera tagged 'MainCamera' found in the scene!");
         }
     }
     
     void Update()
     {
-        // ============================================================================
-        // NEW INPUT SYSTEM - Simple approach using Keyboard.current
-        // ============================================================================
-        // The new Input System works differently than the old Input.GetAxis()
-        // Instead, we check Keyboard.current which gives us the current keyboard state
-        //
-        // Keyboard.current returns null if no keyboard is connected, so check first!
 
         if (cameraTransform == null)
         {
@@ -113,7 +69,7 @@ public class PlayerController : MonoBehaviour
                 verticalInput = -1f;   // Move backward
         }
 
-        // Create horizontal movement (X and Z only)
+        // Handles horizontal movement (X and Z axes)
         Vector3 horizontalMovement = horizontalInput * cameraRight + verticalInput * cameraForward;
 
         if (horizontalMovement.magnitude > 0.1f) {
@@ -123,12 +79,19 @@ public class PlayerController : MonoBehaviour
             horizontalMovement = Vector3.zero;
         }
         
-        // Handle gravity and jumping (affects Y axis)
+        // Handles gravity and jumping (Y-axis stuff)
+        bool wasGrounded = characterController.isGrounded;
+        bool keyboardNotNull = Keyboard.current != null;
+        bool spacePressed = keyboardNotNull && Keyboard.current.spaceKey.wasPressedThisFrame;
+        bool spaceIsPressed = keyboardNotNull && Keyboard.current.spaceKey.isPressed;
+        float velocityYBefore = velocity.y;
+        Vector3 positionBeforeMove = transform.position;
+        
         if (characterController.isGrounded) {
-            velocity.y = -0.2f; // Small downward force to keep grounded
-            // Check jump with new Input System
-            if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame) {
+            if (spacePressed) {
                 velocity.y = jumpForce;
+            } else {
+                velocity.y = -10f;
             }
         } else {
             velocity.y += gravity * Time.deltaTime;
@@ -139,6 +102,7 @@ public class PlayerController : MonoBehaviour
         movement.y = velocity.y * Time.deltaTime;
 
         characterController.Move(movement);
+        
     }
     
    /* void LateUpdate()

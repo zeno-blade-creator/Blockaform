@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Cinemachine;
+using System.IO;
 
 public class LevelDesigner : MonoBehaviour
 {
@@ -91,12 +92,34 @@ public class LevelDesigner : MonoBehaviour
     {
         // Calculate position on top of the platform
         // Platform's top surface is at: platformHeight + (platform height / 2)
-        float playerY = platformHeight + platformPrefab.transform.localScale.y / 2f + playerPrefab.transform.localScale.y / 2f + 0.5f;
+        float platformHalfHeight = platformPrefab.transform.localScale.y / 2f;
+        float playerHalfHeight = playerPrefab.transform.localScale.y / 2f;
+        float extraOffset = 0.5f;
+        float playerY = platformHeight + platformHalfHeight + playerHalfHeight + extraOffset;
         Vector3 playerPosition = new Vector3(platformPosition.x, playerY, platformPosition.z);
+        
+        // #region agent log
+        try {
+            string logPath = "/Users/enzomarkarian/Unity/Hack Club Games/Blockaform/.cursor/debug.log";
+            string logEntry = $"{{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A4\",\"location\":\"LevelDesigner.cs:SpawnPlayer\",\"message\":\"Player spawn calculation\",\"data\":{{\"platformPosition\":\"{platformPosition}\",\"platformHeight\":{platformHeight},\"platformHalfHeight\":{platformHalfHeight},\"playerHalfHeight\":{playerHalfHeight},\"extraOffset\":{extraOffset},\"calculatedPlayerY\":{playerY},\"playerPosition\":\"{playerPosition}\"}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}}}\n";
+            File.AppendAllText(logPath, logEntry);
+        } catch {}
+        // #endregion
         
         // Instantiate the player
         GameObject player = Instantiate(playerPrefab, playerPosition, Quaternion.identity);
         player.name = "Player";
+        
+        // #region agent log
+        CharacterController cc = player.GetComponent<CharacterController>();
+        if (cc != null) {
+            try {
+                string logPath = "/Users/enzomarkarian/Unity/Hack Club Games/Blockaform/.cursor/debug.log";
+                string logEntry = $"{{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A4\",\"location\":\"LevelDesigner.cs:SpawnPlayer:afterInstantiate\",\"message\":\"Player instantiated with CharacterController\",\"data\":{{\"playerPosition\":\"{player.transform.position}\",\"ccHeight\":{cc.height},\"ccCenter\":\"{cc.center}\",\"ccSkinWidth\":{cc.skinWidth},\"platformTopY\":{platformHeight + platformHalfHeight * 2f}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}}}\n";
+                File.AppendAllText(logPath, logEntry);
+            } catch {}
+        }
+        // #endregion
         
         return player;
     }
