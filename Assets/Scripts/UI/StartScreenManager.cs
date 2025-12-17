@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class StartScreenManager : MonoBehaviour
 {
@@ -8,28 +9,26 @@ public class StartScreenManager : MonoBehaviour
     [Tooltip("The Canvas GameObject for the start screen")]
     public GameObject startScreenCanvas;
     
-    [Tooltip("The Play button")]
+    [Tooltip("The Play button for normal mode")]
     public Button playButton;
+
+    [Tooltip("The Play button for endless mode")]
+    public Button endlessButton;
+
+    [Header("Endless Mode UI")]
+    [Tooltip("Text element to show the best endless score")]
+    public TMP_Text endlessBestScoreText;
 
     void Start()
     {
-        // Ensure canvas is visible at start
-        if (startScreenCanvas != null)
-        {
-            ShowStartScreen();
-        }
-        else
-        {
-            Debug.LogError("StartScreenManager: startScreenCanvas is not assigned in the Inspector!");
-        }
 
-        // Connect Play button to PlayGame method
+        // Connect Play button (normal mode)
         if (playButton != null)
         {
             // Remove any existing listeners first to avoid duplicates
             playButton.onClick.RemoveAllListeners();
             playButton.onClick.AddListener(OnPlayButtonClicked);
-            Debug.Log("StartScreenManager: Play button connected to OnPlayButtonClicked method");
+            Debug.Log("StartScreenManager: Play button (Normal) connected to OnPlayButtonClicked method");
             
             // Verify button is interactable
             if (!playButton.interactable)
@@ -42,6 +41,20 @@ public class StartScreenManager : MonoBehaviour
         {
             Debug.LogError("StartScreenManager: playButton is not assigned in the Inspector!");
         }
+
+        // Connect Endless mode button
+        if (endlessButton != null)
+        {
+            endlessButton.onClick.RemoveAllListeners();
+            endlessButton.onClick.AddListener(OnEndlessButtonClicked);
+            Debug.Log("StartScreenManager: Endless button connected to OnEndlessButtonClicked method");
+        }
+        else
+        {
+            Debug.LogWarning("StartScreenManager: endlessButton is not assigned in the Inspector (endless mode will only be startable via code).");
+        }
+
+        UpdateEndlessBestScoreUI();
     }
 
     void Update()
@@ -69,12 +82,32 @@ public class StartScreenManager : MonoBehaviour
 
     void OnPlayButtonClicked()
     {
-        Debug.Log("OnPlayButtonClicked called!");
+        Debug.Log("OnPlayButtonClicked called (Normal mode)!");
         
         if (GameManager.Instance != null)
         {
-            Debug.Log("Play button clicked to play game. Current state: " + GameManager.Instance.CurrentState);
-            GameManager.Instance.PlayGame();
+            Debug.Log("Play button clicked to play NORMAL game. Current state: " + GameManager.Instance.CurrentState);
+            GameManager.Instance.StartNormalRun();
+            // Hide start screen when game starts
+            if (startScreenCanvas != null)
+            {
+                HideStartScreen();
+            }
+        }
+        else
+        {
+            Debug.LogError("StartScreenManager: GameManager.Instance is null! Make sure GameManager exists in the scene.");
+        }
+    }
+
+    void OnEndlessButtonClicked()
+    {
+        Debug.Log("OnEndlessButtonClicked called (Endless mode)!");
+
+        if (GameManager.Instance != null)
+        {
+            Debug.Log("Endless button clicked to play ENDLESS game. Current state: " + GameManager.Instance.CurrentState);
+            GameManager.Instance.StartEndlessRun();
             // Hide start screen when game starts
             if (startScreenCanvas != null)
             {
@@ -95,6 +128,7 @@ public class StartScreenManager : MonoBehaviour
         {
             startScreenCanvas.SetActive(true);
         }
+        UpdateEndlessBestScoreUI();
     }
 
     public void HideStartScreen()
@@ -103,6 +137,14 @@ public class StartScreenManager : MonoBehaviour
         if (startScreenCanvas != null)
         {
             startScreenCanvas.SetActive(false);
+        }
+    }
+
+    void UpdateEndlessBestScoreUI()
+    {
+        if (endlessBestScoreText != null && GameManager.Instance != null)
+        {
+            endlessBestScoreText.text = "Best Endless: " + GameManager.Instance.EndlessBestScore.ToString();
         }
     }
 }

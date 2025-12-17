@@ -20,6 +20,9 @@ public class PauseScreenManager : MonoBehaviour
     [Tooltip("The Regenerate Level button")]
     public Button regenerateButton;
 
+    [Tooltip("The End Run button (used in Endless mode instead of Regenerate)")]
+    public Button endRunButton;
+
     void Start()
     {
         // Ensure canvas is hidden at start
@@ -42,6 +45,13 @@ public class PauseScreenManager : MonoBehaviour
         if (regenerateButton != null)
         {
             regenerateButton.onClick.AddListener(OnRegenerateButtonClicked);
+        }
+
+        if (endRunButton != null)
+        {
+            endRunButton.onClick.RemoveAllListeners();
+            endRunButton.onClick.AddListener(OnEndRunButtonClicked);
+            endRunButton.gameObject.SetActive(false); // hidden by default, shown only in endless mode
         }
 
         if (quitButton != null)
@@ -108,10 +118,32 @@ public class PauseScreenManager : MonoBehaviour
         }
     }
 
+    void OnEndRunButtonClicked()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.EndEndlessRun();
+            HidePauseScreen();
+        }
+    }
+
     public void ShowPauseScreen()
     {
         if (pauseScreenCanvas != null)
         {
+            // Toggle Regenerate vs End Run depending on game mode
+            bool isEndless = GameManager.Instance != null && GameManager.Instance.CurrentMode == GameMode.Endless;
+
+            if (regenerateButton != null)
+            {
+                regenerateButton.gameObject.SetActive(!isEndless);
+            }
+
+            if (endRunButton != null)
+            {
+                endRunButton.gameObject.SetActive(isEndless);
+            }
+
             pauseScreenCanvas.SetActive(true);
         }
     }

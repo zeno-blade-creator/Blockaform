@@ -156,6 +156,6 @@ MonoBehaviour:
   jumpForce: 5
   gravity: -9.8
   coyoteTime: 0.2
-  doubleJumpAmount: 201
+  doubleJumpAmount: 1
   cameraDistance: 10
   cameraHeight: 5
